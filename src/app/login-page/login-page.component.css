@@ -1,0 +1,51 @@
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #c6c5c2;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.center-image {
+  width: 300px;
+  height: auto;
+}
+
+.center-text {
+  font-size: 24px;
+  margin-top: 20px;
+  font-weight: 420;
+}
+
+.login-button {
+  padding: 10px 20px;
+  margin-top: 20px;
+  font-size: 16px;
+  background-color: #333434;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background-color: #000000;
+}
+
+.footer {
+  background-color: #000000;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.footer-text {
+  color: #c6c5c2;
+}

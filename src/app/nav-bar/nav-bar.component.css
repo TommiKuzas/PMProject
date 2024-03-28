@@ -1,0 +1,19 @@
+.custom-search-input {
+  background-color: #ccc;
+  width: 200px;
+}
+.cicular-png {
+  border-radius: 50%;
+}
+.custom-bg-light {
+  background-color: #c6c5c2;
+}
+.custom-bg-dark {
+  background-color: #333434;
+}
+.hover {
+  cursor: pointer;
+}
+.username {
+  color: #c6c5c2;
+}

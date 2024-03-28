@@ -1,0 +1,126 @@
+<app-nav-bar (profileToggle)="toggleProfileModal()"></app-nav-bar>
+<app-profile
+  *ngIf="showProfileModal"
+  (close)="showProfileModal = false"
+></app-profile>
+
+<div class="spinner-container" id="spinner">
+  <div class="spinner-border" role="status">
+    <span class="visually-hidden">Loading ...</span>
+  </div>
+</div>
+
+<div
+  *ngFor="let section of sections"
+  class="collapsible"
+  [id]="section.key + 'Div'"
+  [ngClass]="{ expanded: section.isExpanded }"
+>
+  <img
+    [src]="'../../assets/' + section.key.toUpperCase() + '.png'"
+    alt="Image"
+    class="icon"
+  />
+  <button class="collapsible-btn" (click)="toggleCollapse(section)">
+    <span [ngClass]="{ rotate: section.isExpanded }">&#9660;</span>
+    <span class="text">{{ section.buttonText }}</span>
+  </button>
+  <div class="credBox-and-button">
+    <div class="content credBox">
+      <div>
+        <label class="light-text" for="username">Username:</label>
+        <input
+          class="no-border light-text"
+          [type]="section.showCreds ? 'text' : 'password'"
+          id="username"
+          name="username"
+          [value]="section.email"
+        />
+      </div>
+      <div>
+        <label class="light-text" for="password">Password:</label>
+        <input
+          class="no-border light-text"
+          [type]="section.showCreds ? 'text' : 'password'"
+          id="password"
+          name="password"
+          [value]="section.password"
+        />
+      </div>
+    </div>
+    <div class="copy-btns-container">
+      <button
+        *ngIf="
+          section.isExpanded && section.initialButtonText == 'View Credentials'
+        "
+        class="copy-details-btn"
+        (click)="copyDetails(section, 'Email')"
+      >
+        <img class="copy-image" src="../../assets/copy.png" />
+      </button>
+      <button
+        *ngIf="
+          section.isExpanded && section.initialButtonText == 'View Credentials'
+        "
+        class="copy-details-btn"
+        (click)="copyDetails(section, 'Pass')"
+      >
+        <img class="copy-image" src="../../assets/copy.png" />
+      </button>
+    </div>
+  </div>
+
+  <div class="show-details-container">
+    <button
+      *ngIf="
+        section.isExpanded && section.initialButtonText == 'View Credentials'
+      "
+      class="show-details-btn"
+      (click)="toggleDetails(section)"
+    >
+      {{ section.showCreds ? "Hide Details" : "Show Details" }}
+    </button>
+  </div>
+
+  <button
+    *ngIf="section.isExpanded && section.initialButtonText == 'Add Credentials'"
+    id="add-btn"
+    class="btn-format"
+  >
+    Add
+  </button>
+  <button
+    *ngIf="
+      section.showEditBtn &&
+      section.initialButtonText == 'View Credentials' &&
+      section.isExpanded
+    "
+    id="edit-btn"
+    class="btn-format"
+    (click)="onEditButtonClick(section)"
+  >
+    Edit
+  </button>
+  <button
+    *ngIf="
+      section.showUpdateBtn &&
+      section.initialButtonText == 'View Credentials' &&
+      section.isExpanded
+    "
+    (click)="onUpdateButtonClick()"
+    id="update-btn"
+    class="btn-format"
+  >
+    Update
+  </button>
+  <button
+    *ngIf="
+      section.isExpanded && section.initialButtonText == 'View Credentials'
+    "
+    id="delete-btn"
+    class="btn-format"
+    (click)="onUpdateButtonClick()"
+  >
+    Delete
+  </button>
+</div>

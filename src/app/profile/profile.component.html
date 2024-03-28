@@ -1,0 +1,18 @@
+<div class="modal" style="display: block">
+  <div class="modal-content d-flex flex-column">
+    <span class="close" (click)="close.emit()">&times;</span>
+    <h1>User Profile</h1>
+    <div class="profile-image">
+      <img
+        src="\..\..\assets\new-user.png"
+        alt="Profile Image"
+        style="width: 200px; height: 200px; padding: 35px"
+      />
+    </div>
+    <div class="profile-details">
+      <h2 id="userFName">{{ userFName }}</h2>
+      <h2 id="userEmail">{{ userEmail }}</h2>
+    </div>
+    <button class="logout-button" (click)="logout()">Logout</button>
+  </div>
+</div>

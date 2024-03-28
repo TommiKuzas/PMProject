@@ -1,0 +1,131 @@
+body {
+  background-color: #c6c5c2;
+}
+
+.btn-format {
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  margin-top: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.collapsible-btn {
+  background-color: #333;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+}
+.collapsible {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.collapsible-btn span {
+  display: inline-block;
+  transition: transform 0.3s ease-in-out;
+}
+
+.collapsible-btn .rotate {
+  transform: rotate(180deg);
+}
+
+.collapsible .content {
+  display: none;
+  margin-top: 20px;
+}
+
+.collapsible.expanded .content {
+  display: block;
+}
+
+.collapsible-btn .text {
+  margin-left: 5px;
+}
+
+.icon {
+  height: 44px;
+  width: 44px;
+  border-radius: 25%;
+  margin-right: 5px;
+  margin-top: -5px;
+  border: 2px solid black;
+}
+
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+}
+
+.no-border {
+  margin-left: 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  border-width: 2px;
+  background-color: transparent;
+}
+
+.credBox {
+  background-color: #333434;
+  padding: 10px;
+  border: 1px solid;
+  border-radius: 5px;
+  border-width: 2px;
+  box-sizing: border-box;
+  width: 300px;
+  margin-right: 20px;
+}
+
+.light-text {
+  color: #c6c5c2;
+}
+
+.show-details-btn {
+  background-color: #333434;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.copy-details-btn {
+  background-color: #333434;
+  height: 30px;
+  width: 30px;
+  padding: 0;
+  border-radius: 5px;
+  /* margin: 20px; */
+}
+
+.copy-image {
+  height: 100%;
+  width: 100%;
+}
+
+.credBox-and-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.copy-btns-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 25px;
+}
+
+.copy-details-btn {
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
