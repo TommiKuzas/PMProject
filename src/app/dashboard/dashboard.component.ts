@@ -13,6 +13,7 @@ interface SectionData {
   showEditBtn: boolean;
   showUpdateBtn: boolean;
   showCreds: boolean;
+  readOnlyMode: boolean;
 }
 
 @Component({
@@ -33,6 +34,7 @@ export class DashboardComponent implements OnInit {
       showEditBtn: false,
       showUpdateBtn: false,
       showCreds: false,
+      readOnlyMode: false,
     },
     {
       key: 'linkedin',
@@ -44,6 +46,7 @@ export class DashboardComponent implements OnInit {
       showEditBtn: false,
       showUpdateBtn: false,
       showCreds: false,
+      readOnlyMode: false,
     },
     {
       key: 'x',
@@ -55,6 +58,7 @@ export class DashboardComponent implements OnInit {
       showEditBtn: false,
       showUpdateBtn: false,
       showCreds: false,
+      readOnlyMode: false,
     },
     {
       key: 'snapchat',
@@ -66,6 +70,7 @@ export class DashboardComponent implements OnInit {
       showEditBtn: false,
       showUpdateBtn: false,
       showCreds: false,
+      readOnlyMode: false,
     },
     {
       key: 'instagram',
@@ -77,6 +82,7 @@ export class DashboardComponent implements OnInit {
       showEditBtn: false,
       showUpdateBtn: false,
       showCreds: false,
+      readOnlyMode: false,
     },
   ];
   // sectionForms: FormGroup[] = [];
@@ -96,10 +102,6 @@ export class DashboardComponent implements OnInit {
   loginResponse: any;
   showProfileModal: boolean = false;
   getCredsResponse: any;
-
-  toggleProfileModal() {
-    this.showProfileModal = !this.showProfileModal;
-  }
 
   callGetCredsFunction(email: any) {
     this.webService.getCreds(email).subscribe(
@@ -145,41 +147,8 @@ export class DashboardComponent implements OnInit {
       }, 0);
     });
     this.fillForms(); // takes values from db and ads them to form.
+    this.initialiseReadOnly();
     document.getElementById('spinner')?.setAttribute('style', 'display: none;');
-  }
-  // when button click change to hide or view/add
-  toggleCollapse(section: SectionData) {
-    section.isExpanded = !section.isExpanded;
-    if (section.isExpanded) {
-      section.buttonText = 'Hide';
-      section.showEditBtn = true;
-    } else {
-      section.buttonText = section.initialButtonText;
-      section.showEditBtn = false;
-    }
-  }
-
-  onEditButtonClick(section: SectionData) {
-    // need to do something that makes it obvious to the user that they can now edit there stuff.
-    // i should make it impossible to type until edit is pressed or creds dont exist.
-    section.showEditBtn = false;
-    section.showUpdateBtn = true;
-  }
-
-  onUpdateButtonClick() {
-    // take info and make API call
-    // hide update button, show edit button, tell user if it was successful.
-  }
-
-  toggleDetails(section: SectionData) {
-    section.showCreds = !section.showCreds;
-  }
-  copyDetails(section: SectionData, emailPass: string) {
-    if (emailPass == 'Email') {
-      this.clipboard.copy(section.email);
-    } else {
-      this.clipboard.copy(section.password);
-    }
   }
 
   initaliseForms() {
@@ -211,6 +180,40 @@ export class DashboardComponent implements OnInit {
     return false;
   }
 
+  initialiseReadOnly() {
+    this.sections.forEach((section) => {
+      if (section.email != '') {
+        section.readOnlyMode = true;
+      }
+    });
+  }
+  // returns true if password is atleast 8 characters long with number and special character
+  checkPassStrength(password: string): boolean {
+    const strongPassRegex: RegExp =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@£$%^&*#?])[A-Za-z\d!@£$%^&*#?]{8,}$/;
+    return strongPassRegex.test(password);
+  }
+
+  // <<<==================================================================>>
+  //                               Buttons
+  // <<<==================================================================>>
+
+  toggleProfileModal() {
+    this.showProfileModal = !this.showProfileModal;
+  }
+
+  // when button click change to hide or view/add
+  toggleCollapse(section: SectionData) {
+    section.isExpanded = !section.isExpanded;
+    if (section.isExpanded) {
+      section.buttonText = 'Hide';
+      section.showEditBtn = true;
+    } else {
+      section.buttonText = section.initialButtonText;
+      section.showEditBtn = false;
+    }
+  }
+
   onAddButtonClick(section: SectionData) {
     const pass = this.sectionForms[section.key].get('Password')?.value;
     const email = this.sectionForms[section.key].get('Email')?.value;
@@ -237,7 +240,6 @@ export class DashboardComponent implements OnInit {
         },
         'user-email': userEmail,
       };
-      console.log(payload);
       // sends new creds to DB
       this.webService.addCreds(payload).subscribe(
         (response) => {
@@ -255,13 +257,6 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  // returns true if password is atleast 8 characters long with number and special character
-  checkPassStrength(password: string): boolean {
-    const strongPassRegex: RegExp =
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@£$%^&*#?])[A-Za-z\d!@£$%^&*#?]{8,}$/;
-    return strongPassRegex.test(password);
-  }
-
   onDeleteButtonClick(section: SectionData) {
     const key = section.key;
     const userEmail = sessionStorage.getItem('userEmail');
@@ -269,8 +264,7 @@ export class DashboardComponent implements OnInit {
       key: key,
       'user-email': userEmail,
     };
-    console.log(payload);
-    // sends new creds to DB
+    // sends creds to delete
     this.webService.deleteCreds(payload).subscribe(
       (response) => {
         // clear session for that cred
@@ -281,5 +275,57 @@ export class DashboardComponent implements OnInit {
         console.error('Error while Adding Creds:', error);
       }
     );
+  }
+
+  copyDetails(section: SectionData, emailPass: string) {
+    if (emailPass == 'Email') {
+      this.clipboard.copy(section.email);
+    } else {
+      this.clipboard.copy(section.password);
+    }
+  }
+
+  toggleDetails(section: SectionData) {
+    section.showCreds = !section.showCreds;
+  }
+
+  onEditButtonClick(section: SectionData) {
+    section.readOnlyMode = false;
+    section.showEditBtn = false;
+    section.showUpdateBtn = true;
+    section.showCreds = true;
+  }
+
+  onUpdateButtonClick(section: SectionData) {
+    const pass = this.sectionForms[section.key].get('Password')?.value;
+    const email = this.sectionForms[section.key].get('Email')?.value;
+    const userEmail = sessionStorage.getItem('userEmail');
+    const key = section.key;
+
+    if (this.checkPassStrength(pass)) {
+      // ADD A SPINNER FOR THIS SECTION AND TURN IT ON HERE
+      // make payload
+      const payload = {
+        key: key,
+        email: email,
+        password: pass,
+        'user-email': userEmail,
+      };
+      // send request
+      this.webService.updateCreds(payload).subscribe(
+        (response) => {
+          sessionStorage.removeItem(key.toUpperCase());
+          window.location.reload();
+        },
+        (error) => {
+          console.error('Error while Adding Creds:', error);
+        }
+      );
+    } else {
+      // shows label that explain password requirements -- this might not work / important
+      document
+        .getElementById('weakPasswordLabel')
+        ?.setAttribute('style', 'display: block;');
+    }
   }
 }

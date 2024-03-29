@@ -37,6 +37,7 @@
             name="email"
             [value]="section.email"
             formControlName="Email"
+            [readonly]="section.readOnlyMode"
           />
         </div>
         <div>
@@ -47,6 +48,7 @@
             name="password"
             [value]="section.password"
             formControlName="Password"
+            [readonly]="section.readOnlyMode"
           />
         </div>
       </form>
@@ -101,11 +103,20 @@
       [hidden]="isFormFilled(section)"
       >Enter {{ section.key }} Creds Above</label
     >
+    <!-- <label for="weakPassword" id="weakPasswordLabel" style="display: none"
+      >Password must have at least eight characters, one letter, <br />
+      one number and one special character!</label
+    > -->
+  </div>
+  <div *ngIf="section.isExpanded">
     <label for="weakPassword" id="weakPasswordLabel" style="display: none"
       >Password must have at least eight characters, one letter, <br />
       one number and one special character!</label
     >
+    <!-- this is buggy, only works if other things are closed
+        Probably need to include something in sections -->
   </div>
+
   <div
     id="add-spinner"
     style="display: none"
@@ -133,10 +144,9 @@
       section.initialButtonText == 'View Credentials' &&
       section.isExpanded
     "
-    (click)="onUpdateButtonClick()"
     id="update-btn"
     class="btn-format"
-    (click)="onUpdateButtonClick()"
+    (click)="onUpdateButtonClick(section)"
   >
     Update
   </button>
