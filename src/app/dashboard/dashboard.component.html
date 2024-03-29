@@ -30,12 +30,11 @@
     <div class="content credBox">
       <form [formGroup]="sectionForms[section.key]">
         <div>
-          <label class="light-text" for="username">Username:</label>
+          <label class="light-text" for="email">Email:</label>
           <input
             class="no-border light-text"
             [type]="section.showCreds ? 'text' : 'password'"
-            id="username"
-            name="username"
+            name="email"
             [value]="section.email"
             formControlName="Email"
           />
@@ -45,7 +44,6 @@
           <input
             class="no-border light-text"
             [type]="section.showCreds ? 'text' : 'password'"
-            id="password"
             name="password"
             [value]="section.password"
             formControlName="Password"
@@ -77,10 +75,9 @@
 
   <div class="show-details-container">
     <button
-      *ngIf="
-        section.isExpanded && section.initialButtonText == 'View Credentials'
-      "
+      *ngIf="section.isExpanded"
       class="show-details-btn"
+      [hidden]="!isFormFilled(section)"
       (click)="toggleDetails(section)"
     >
       {{ section.showCreds ? "Hide Details" : "Show Details" }}
@@ -91,19 +88,24 @@
     *ngIf="section.isExpanded && section.initialButtonText == 'Add Credentials'"
   >
     <button
-      *ngIf="section.email != ''"
       id="add-btn"
       class="btn-format"
+      [hidden]="!isFormFilled(section)"
       (click)="onAddButtonClick(section)"
     >
       Add
     </button>
-    <label for="weakPassword" id="weakPasswordLabel"
-      >Password must have minimum eight characters, at least one letter, one
+    <label
+      for="enterCreds"
+      id="enterCredsLabel"
+      [hidden]="isFormFilled(section)"
+      >Enter {{ section.key }} Creds Above</label
+    >
+    <label for="weakPassword" id="weakPasswordLabel" style="display: none"
+      >Password must have at least eight characters, one letter, {{ "/n" }} one
       number and one special character</label
     >
   </div>
-  <button (click)="print(section)">print</button>
   <button
     *ngIf="
       section.showEditBtn &&

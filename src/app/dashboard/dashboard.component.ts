@@ -198,19 +198,65 @@ export class DashboardComponent implements OnInit {
       });
     });
   }
-  isFormEntered(section: SectionData) {
-    // section.
-    // return section.form.valid;
-  } // forgot what i needed this for
+
+  // dynamically hide/show add button and enter creds label (i remembered :])
+  isFormFilled(section: SectionData): boolean {
+    const formGroup = this.sectionForms[section.key];
+    if (formGroup) {
+      const email = formGroup.get('Email')?.value;
+      const password = formGroup.get('Password')?.value;
+      return email && password;
+    }
+    return false;
+  }
 
   onAddButtonClick(section: SectionData) {
-    this.checkPassStrength('test');
+    const pass = this.sectionForms[section.key].get('Password')?.value;
+    const email = this.sectionForms[section.key].get('Email')?.value;
+    const userEmail = sessionStorage.getItem('userEmail');
+    if (this.checkPassStrength(pass)) {
+      // hides label
+      document
+        .getElementById('weakPasswordLabel')
+        ?.setAttribute('style', 'display: none;');
+
+      // creates payload
+      const payload = {
+        'new-Cred': {
+          [section.key]: {
+            email: email,
+            password: pass,
+          },
+        },
+        'user-email': userEmail,
+      };
+      console.log(payload);
+      // sends new creds to DB
+      this.webService.addCreds(payload).subscribe(
+        (response) => {
+          // inform user of success
+          // refresh page here
+          window.location.reload();
+        },
+        (error) => {
+          console.error('Error while Adding Creds:', error);
+        }
+      );
+    } else {
+      // shows label that explain password requirements
+      document
+        .getElementById('weakPasswordLabel')
+        ?.setAttribute('style', 'display: block;');
+    }
   }
 
-  checkPassStrength(password: string) {
-    console.log('');
+  // returns true if password is atleast 8 characters long with number and special character
+  checkPassStrength(password: string): boolean {
+    const strongPassRegex: RegExp =
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@£$%^&*#?])[A-Za-z\d!@£$%^&*#?]{8,}$/;
+    return strongPassRegex.test(password);
   }
-  print(section: SectionData) {
-    console.log(this.sectionForms[section.key]);
+  deleteCred() {
+    // clear session for that cred
   }
 }
