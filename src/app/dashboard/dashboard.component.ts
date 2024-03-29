@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { WebService } from '../web.service';
 import { Clipboard } from '@angular/cdk/clipboard';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 interface SectionData {
   key: string;
@@ -78,9 +79,16 @@ export class DashboardComponent implements OnInit {
       showCreds: false,
     },
   ];
+  // sectionForms: FormGroup[] = [];
+  sectionForms: { [key: string]: FormGroup } = {};
 
-  constructor(public webService: WebService, private clipboard: Clipboard) {}
+  constructor(
+    public webService: WebService,
+    private clipboard: Clipboard,
+    private formBuilder: FormBuilder
+  ) {}
   ngOnInit(): void {
+    this.initaliseForms();
     const userEmail = sessionStorage.getItem('userEmail');
     this.callGetCredsFunction({ 'user-email': userEmail }); // gets creds
   }
@@ -123,14 +131,21 @@ export class DashboardComponent implements OnInit {
         section.buttonText = 'Add Credentials';
         section.initialButtonText = 'Add Credentials';
       } else {
-        // set button to view and update section with new data
+        // sets button to view and updates section with new data
         section.buttonText = 'View Credentials';
         section.initialButtonText = 'View Credentials';
         const { email, password } = JSON.parse(sessionItem);
         section.email = email;
         section.password = password;
       }
+      // Makes creds visible once everyting is retrieved
+      setTimeout(() => {
+        document
+          .getElementById(section.key + 'Div')
+          ?.setAttribute('style', 'display: block;');
+      }, 0);
     });
+    this.fillForms(); // takes values from db and ads them to form.
     document.getElementById('spinner')?.setAttribute('style', 'display: none;');
   }
   // when button click change to hide or view/add
@@ -152,6 +167,7 @@ export class DashboardComponent implements OnInit {
 
   onUpdateButtonClick() {
     // take info and make API call
+    // hide update button, show edit button, tell user if it was successful.
   }
 
   toggleDetails(section: SectionData) {
@@ -163,5 +179,38 @@ export class DashboardComponent implements OnInit {
     } else {
       this.clipboard.copy(section.password);
     }
+  }
+
+  initaliseForms() {
+    this.sections.forEach((section) => {
+      const formGroup = this.formBuilder.group({
+        Email: ['', Validators.required],
+        Password: ['', Validators.required],
+      });
+      this.sectionForms[section.key] = formGroup;
+    });
+  }
+  fillForms() {
+    this.sections.forEach((section) => {
+      this.sectionForms[section.key].patchValue({
+        Email: section.email,
+        Password: section.password,
+      });
+    });
+  }
+  isFormEntered(section: SectionData) {
+    // section.
+    // return section.form.valid;
+  } // forgot what i needed this for
+
+  onAddButtonClick(section: SectionData) {
+    this.checkPassStrength('test');
+  }
+
+  checkPassStrength(password: string) {
+    console.log('');
+  }
+  print(section: SectionData) {
+    console.log(this.sectionForms[section.key]);
   }
 }

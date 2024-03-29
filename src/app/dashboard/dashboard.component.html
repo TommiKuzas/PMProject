@@ -11,9 +11,10 @@
 </div>
 
 <div
-  *ngFor="let section of sections"
+  *ngFor="let section of sections; let i = index"
   class="collapsible"
   [id]="section.key + 'Div'"
+  style="display: none"
   [ngClass]="{ expanded: section.isExpanded }"
 >
   <img
@@ -27,26 +28,30 @@
   </button>
   <div class="credBox-and-button">
     <div class="content credBox">
-      <div>
-        <label class="light-text" for="username">Username:</label>
-        <input
-          class="no-border light-text"
-          [type]="section.showCreds ? 'text' : 'password'"
-          id="username"
-          name="username"
-          [value]="section.email"
-        />
-      </div>
-      <div>
-        <label class="light-text" for="password">Password:</label>
-        <input
-          class="no-border light-text"
-          [type]="section.showCreds ? 'text' : 'password'"
-          id="password"
-          name="password"
-          [value]="section.password"
-        />
-      </div>
+      <form [formGroup]="sectionForms[section.key]">
+        <div>
+          <label class="light-text" for="username">Username:</label>
+          <input
+            class="no-border light-text"
+            [type]="section.showCreds ? 'text' : 'password'"
+            id="username"
+            name="username"
+            [value]="section.email"
+            formControlName="Email"
+          />
+        </div>
+        <div>
+          <label class="light-text" for="password">Password:</label>
+          <input
+            class="no-border light-text"
+            [type]="section.showCreds ? 'text' : 'password'"
+            id="password"
+            name="password"
+            [value]="section.password"
+            formControlName="Password"
+          />
+        </div>
+      </form>
     </div>
     <div class="copy-btns-container">
       <button
@@ -82,13 +87,23 @@
     </button>
   </div>
 
-  <button
+  <div
     *ngIf="section.isExpanded && section.initialButtonText == 'Add Credentials'"
-    id="add-btn"
-    class="btn-format"
   >
-    Add
-  </button>
+    <button
+      *ngIf="section.email != ''"
+      id="add-btn"
+      class="btn-format"
+      (click)="onAddButtonClick(section)"
+    >
+      Add
+    </button>
+    <label for="weakPassword" id="weakPasswordLabel"
+      >Password must have minimum eight characters, at least one letter, one
+      number and one special character</label
+    >
+  </div>
+  <button (click)="print(section)">print</button>
   <button
     *ngIf="
       section.showEditBtn &&
