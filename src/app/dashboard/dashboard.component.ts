@@ -124,7 +124,6 @@ export class DashboardComponent implements OnInit {
 
   initialiseCreds() {
     this.sections.forEach((section) => {
-      // loop through each cred
       // check if cred exists, if not set button text to Add
       const sessionItem = sessionStorage.getItem(section.key.toUpperCase());
       if (!sessionItem) {
@@ -161,6 +160,8 @@ export class DashboardComponent implements OnInit {
   }
 
   onEditButtonClick(section: SectionData) {
+    // need to do something that makes it obvious to the user that they can now edit there stuff.
+    // i should make it impossible to type until edit is pressed or creds dont exist.
     section.showEditBtn = false;
     section.showUpdateBtn = true;
   }
@@ -214,12 +215,18 @@ export class DashboardComponent implements OnInit {
     const pass = this.sectionForms[section.key].get('Password')?.value;
     const email = this.sectionForms[section.key].get('Email')?.value;
     const userEmail = sessionStorage.getItem('userEmail');
+
     if (this.checkPassStrength(pass)) {
+      document
+        .getElementById('add-spinner')
+        ?.setAttribute('style', 'display: block;');
       // hides label
       document
         .getElementById('weakPasswordLabel')
         ?.setAttribute('style', 'display: none;');
-
+      document
+        .getElementById('add-btn')
+        ?.setAttribute('style', 'display: none;');
       // creates payload
       const payload = {
         'new-Cred': {
@@ -234,8 +241,6 @@ export class DashboardComponent implements OnInit {
       // sends new creds to DB
       this.webService.addCreds(payload).subscribe(
         (response) => {
-          // inform user of success
-          // refresh page here
           window.location.reload();
         },
         (error) => {
@@ -256,7 +261,25 @@ export class DashboardComponent implements OnInit {
       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@£$%^&*#?])[A-Za-z\d!@£$%^&*#?]{8,}$/;
     return strongPassRegex.test(password);
   }
-  deleteCred() {
-    // clear session for that cred
+
+  onDeleteButtonClick(section: SectionData) {
+    const key = section.key;
+    const userEmail = sessionStorage.getItem('userEmail');
+    const payload = {
+      key: key,
+      'user-email': userEmail,
+    };
+    console.log(payload);
+    // sends new creds to DB
+    this.webService.deleteCreds(payload).subscribe(
+      (response) => {
+        // clear session for that cred
+        sessionStorage.removeItem(key.toUpperCase());
+        window.location.reload();
+      },
+      (error) => {
+        console.error('Error while Adding Creds:', error);
+      }
+    );
   }
 }

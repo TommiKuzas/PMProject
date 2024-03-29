@@ -102,9 +102,18 @@
       >Enter {{ section.key }} Creds Above</label
     >
     <label for="weakPassword" id="weakPasswordLabel" style="display: none"
-      >Password must have at least eight characters, one letter, {{ "/n" }} one
-      number and one special character</label
+      >Password must have at least eight characters, one letter, <br />
+      one number and one special character!</label
     >
+  </div>
+  <div
+    id="add-spinner"
+    style="display: none"
+    *ngIf="section.isExpanded && section.initialButtonText == 'Add Credentials'"
+  >
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading ...</span>
+    </div>
   </div>
   <button
     *ngIf="
@@ -127,6 +136,7 @@
     (click)="onUpdateButtonClick()"
     id="update-btn"
     class="btn-format"
+    (click)="onUpdateButtonClick()"
   >
     Update
   </button>
@@ -136,7 +146,7 @@
     "
     id="delete-btn"
     class="btn-format"
-    (click)="onUpdateButtonClick()"
+    (click)="onDeleteButtonClick(section)"
   >
     Delete
   </button>
