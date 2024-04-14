@@ -14,6 +14,7 @@ interface SectionData {
   showUpdateBtn: boolean;
   showCreds: boolean;
   readOnlyMode: boolean;
+  loginURL: string;
 }
 
 @Component({
@@ -35,6 +36,7 @@ export class DashboardComponent implements OnInit {
       showUpdateBtn: false,
       showCreds: false,
       readOnlyMode: false,
+      loginURL: 'https://www.facebook.com/login/',
     },
     {
       key: 'linkedin',
@@ -47,6 +49,7 @@ export class DashboardComponent implements OnInit {
       showUpdateBtn: false,
       showCreds: false,
       readOnlyMode: false,
+      loginURL: 'https://www.linkedin.com/login',
     },
     {
       key: 'x',
@@ -59,6 +62,7 @@ export class DashboardComponent implements OnInit {
       showUpdateBtn: false,
       showCreds: false,
       readOnlyMode: false,
+      loginURL: 'https://twitter.com/i/flow/login',
     },
     {
       key: 'snapchat',
@@ -71,6 +75,7 @@ export class DashboardComponent implements OnInit {
       showUpdateBtn: false,
       showCreds: false,
       readOnlyMode: false,
+      loginURL: 'https://accounts.snapchat.com/accounts/v2/login',
     },
     {
       key: 'instagram',
@@ -83,9 +88,10 @@ export class DashboardComponent implements OnInit {
       showUpdateBtn: false,
       showCreds: false,
       readOnlyMode: false,
+      loginURL: 'https://www.instagram.com/accounts/login/',
     },
   ];
-  // sectionForms: FormGroup[] = [];
+
   sectionForms: { [key: string]: FormGroup } = {};
 
   constructor(
@@ -101,7 +107,9 @@ export class DashboardComponent implements OnInit {
 
   loginResponse: any;
   showProfileModal: boolean = false;
+  showCheckPassStrengthModal: boolean = false;
   getCredsResponse: any;
+  strongPassword: string = '';
 
   callGetCredsFunction(email: any) {
     this.webService.getCreds(email).subscribe(
@@ -201,7 +209,9 @@ export class DashboardComponent implements OnInit {
   toggleProfileModal() {
     this.showProfileModal = !this.showProfileModal;
   }
-
+  toggleCheckPassStrengthModal() {
+    this.showCheckPassStrengthModal = !this.showProfileModal;
+  }
   // when button click change to hide or view/add
   toggleCollapse(section: SectionData) {
     section.isExpanded = !section.isExpanded;
@@ -252,7 +262,7 @@ export class DashboardComponent implements OnInit {
     } else {
       // shows label that explain password requirements
       document
-        .getElementById('weakPasswordLabel')
+        .getElementById(section.key + 'weakPasswordLabel')
         ?.setAttribute('style', 'display: block;');
     }
   }
@@ -297,13 +307,15 @@ export class DashboardComponent implements OnInit {
   }
 
   onUpdateButtonClick(section: SectionData) {
+    document
+      .getElementById(section.key + 'update-spinner')
+      ?.setAttribute('style', 'display: block;');
     const pass = this.sectionForms[section.key].get('Password')?.value;
     const email = this.sectionForms[section.key].get('Email')?.value;
     const userEmail = sessionStorage.getItem('userEmail');
     const key = section.key;
 
     if (this.checkPassStrength(pass)) {
-      // ADD A SPINNER FOR THIS SECTION AND TURN IT ON HERE
       // make payload
       const payload = {
         key: key,
@@ -314,6 +326,9 @@ export class DashboardComponent implements OnInit {
       // send request
       this.webService.updateCreds(payload).subscribe(
         (response) => {
+          document
+            .getElementById(section.key + 'btns-conainer')
+            ?.setAttribute('style', 'display: none;');
           sessionStorage.removeItem(key.toUpperCase());
           window.location.reload();
         },
@@ -326,6 +341,24 @@ export class DashboardComponent implements OnInit {
       document
         .getElementById('weakPasswordLabel')
         ?.setAttribute('style', 'display: block;');
+      document
+        .getElementById(section.key + 'update-spinner')
+        ?.setAttribute('style', 'display: none;');
+    }
+  }
+
+  onSocialLinkButtonClick(section: SectionData) {
+    window.open(section.loginURL);
+  }
+
+  generatePass() {
+    const possibleCharacters =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPWRSTUVWXYZ0123456789!@£$%^&*#?';
+    for (let i = 0; i < 20; i++) {
+      this.strongPassword +=
+        possibleCharacters[
+          Math.floor(Math.random() * possibleCharacters.length)
+        ];
     }
   }
 }

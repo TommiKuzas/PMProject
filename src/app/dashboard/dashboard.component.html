@@ -1,8 +1,15 @@
-<app-nav-bar (profileToggle)="toggleProfileModal()"></app-nav-bar>
+<app-nav-bar
+  (profileToggle)="toggleProfileModal()"
+  (PassStrengthToggle)="toggleCheckPassStrengthModal()"
+></app-nav-bar>
 <app-profile
   *ngIf="showProfileModal"
   (close)="showProfileModal = false"
 ></app-profile>
+<app-password-leak-check
+  *ngIf="showCheckPassStrengthModal"
+  (close)="showCheckPassStrengthModal = false"
+></app-password-leak-check>
 
 <div class="spinner-container" id="spinner">
   <div class="spinner-border" role="status">
@@ -22,7 +29,10 @@
     alt="Image"
     class="icon"
   />
-  <button class="collapsible-btn" (click)="toggleCollapse(section)">
+  <button
+    class="collapsible-btn hover-colour"
+    (click)="toggleCollapse(section)"
+  >
     <span [ngClass]="{ rotate: section.isExpanded }">&#9660;</span>
     <span class="text">{{ section.buttonText }}</span>
   </button>
@@ -58,7 +68,7 @@
         *ngIf="
           section.isExpanded && section.initialButtonText == 'View Credentials'
         "
-        class="copy-details-btn"
+        class="copy-details-btn hover-colour"
         (click)="copyDetails(section, 'Email')"
       >
         <img class="copy-image" src="../../assets/copy.png" />
@@ -67,31 +77,19 @@
         *ngIf="
           section.isExpanded && section.initialButtonText == 'View Credentials'
         "
-        class="copy-details-btn"
+        class="copy-details-btn hover-colour"
         (click)="copyDetails(section, 'Pass')"
       >
         <img class="copy-image" src="../../assets/copy.png" />
       </button>
     </div>
   </div>
-
-  <div class="show-details-container">
-    <button
-      *ngIf="section.isExpanded"
-      class="show-details-btn"
-      [hidden]="!isFormFilled(section)"
-      (click)="toggleDetails(section)"
-    >
-      {{ section.showCreds ? "Hide Details" : "Show Details" }}
-    </button>
-  </div>
-
   <div
     *ngIf="section.isExpanded && section.initialButtonText == 'Add Credentials'"
   >
     <button
       id="add-btn"
-      class="btn-format"
+      class="btn-format hover-colour"
       [hidden]="!isFormFilled(section)"
       (click)="onAddButtonClick(section)"
     >
@@ -103,18 +101,43 @@
       [hidden]="isFormFilled(section)"
       >Enter {{ section.key }} Creds Above</label
     >
-    <!-- <label for="weakPassword" id="weakPasswordLabel" style="display: none"
-      >Password must have at least eight characters, one letter, <br />
-      one number and one special character!</label
-    > -->
+  </div>
+  <div class="show-details-container">
+    <button
+      *ngIf="
+        section.isExpanded && section.initialButtonText == 'Add Credentials'
+      "
+      class="show-details-btn hover-colour"
+      [hidden]="!isFormFilled(section)"
+      (click)="toggleDetails(section)"
+    >
+      {{ section.showCreds ? "Hide Details" : "Show Details" }}
+    </button>
   </div>
   <div *ngIf="section.isExpanded">
-    <label for="weakPassword" id="weakPasswordLabel" style="display: none"
+    <label
+      for="weakPassword"
+      [id]="section.key + 'weakPasswordLabel'"
+      style="display: none"
       >Password must have at least eight characters, one letter, <br />
       one number and one special character!</label
     >
-    <!-- this is buggy, only works if other things are closed
-        Probably need to include something in sections -->
+  </div>
+  <div
+    *ngIf="section.isExpanded && section.initialButtonText == 'Add Credentials'"
+  >
+    <div>
+      <button
+        id="generate-password-btn"
+        class="btn-format hover-colour"
+        (click)="generatePass()"
+      >
+        Generate Secure Password
+      </button>
+    </div>
+    <div>
+      <label for="strong-pass">{{ strongPassword }}</label>
+    </div>
   </div>
 
   <div
@@ -126,38 +149,76 @@
       <span class="visually-hidden">Loading ...</span>
     </div>
   </div>
-  <button
-    *ngIf="
-      section.showEditBtn &&
-      section.initialButtonText == 'View Credentials' &&
-      section.isExpanded
-    "
-    id="edit-btn"
-    class="btn-format"
-    (click)="onEditButtonClick(section)"
-  >
-    Edit
-  </button>
-  <button
-    *ngIf="
-      section.showUpdateBtn &&
-      section.initialButtonText == 'View Credentials' &&
-      section.isExpanded
-    "
-    id="update-btn"
-    class="btn-format"
-    (click)="onUpdateButtonClick(section)"
-  >
-    Update
-  </button>
-  <button
+  <div [id]="section.key + 'btns-conainer'">
+    <div class="show-details-container">
+      <button
+        *ngIf="
+          section.isExpanded && section.initialButtonText == 'View Credentials'
+        "
+        class="show-details-btn hover-colour"
+        [hidden]="!isFormFilled(section)"
+        (click)="toggleDetails(section)"
+      >
+        {{ section.showCreds ? "Hide Details" : "Show Details" }}
+      </button>
+    </div>
+    <div class="link-social-container">
+      <button
+        *ngIf="
+          section.isExpanded && section.initialButtonText == 'View Credentials'
+        "
+        class="btn-format hover-colour"
+        (click)="onSocialLinkButtonClick(section)"
+      >
+        Open {{ section.key }} Login Page
+      </button>
+    </div>
+    <button
+      *ngIf="
+        section.showEditBtn &&
+        section.initialButtonText == 'View Credentials' &&
+        section.isExpanded
+      "
+      id="edit-btn"
+      class="btn-format hover-colour"
+      (click)="onEditButtonClick(section)"
+    >
+      Edit
+    </button>
+    <button
+      *ngIf="
+        section.showUpdateBtn &&
+        section.initialButtonText == 'View Credentials' &&
+        section.isExpanded
+      "
+      id="update-btn"
+      class="btn-format hover-colour"
+      (click)="onUpdateButtonClick(section)"
+    >
+      Update
+    </button>
+
+    <button
+      *ngIf="
+        section.isExpanded && section.initialButtonText == 'View Credentials'
+      "
+      id="delete-btn"
+      class="btn-format hover-colour"
+      (click)="onDeleteButtonClick(section)"
+    >
+      Delete
+    </button>
+  </div>
+
+  <div
+    [id]="section.key + 'update-spinner'"
+    style="display: none"
     *ngIf="
       section.isExpanded && section.initialButtonText == 'View Credentials'
     "
-    id="delete-btn"
-    class="btn-format"
-    (click)="onDeleteButtonClick(section)"
   >
-    Delete
-  </button>
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading ...</span>
+    </div>
+  </div>
 </div>

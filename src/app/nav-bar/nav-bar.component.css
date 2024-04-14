@@ -17,3 +17,9 @@
 .username {
   color: #c6c5c2;
 }
+.project-name {
+  color: #c6c5c2;
+}
+.hover-colour:hover {
+  background-color: #000000;
+}

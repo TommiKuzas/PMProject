@@ -10,7 +10,7 @@ import { LoginPageComponent } from './login-page/login-page.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { ProfileComponent } from './profile/profile.component';
-// import { ClipboardModule } from '@angular/cdk/clipboard';
+import { PasswordLeakCheckComponent } from './password-leak-check/password-leak-check.component';
 
 var routes: any = [
   {
@@ -30,13 +30,13 @@ var routes: any = [
     DashboardComponent,
     NavBarComponent,
     ProfileComponent,
+    PasswordLeakCheckComponent,
   ],
   imports: [
     BrowserModule,
     HttpClientModule,
     RouterModule.forRoot(routes),
     ReactiveFormsModule,
-    // ClipboardModule,
     AuthModule.forRoot({
       domain: 'dev-dpbiy4c0gbvmw7yv.us.auth0.com',
       clientId: 'mucoK0dwJjPnNTXXJuQk9VWmADXIwpTL',
