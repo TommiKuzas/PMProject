@@ -197,7 +197,7 @@
         "inputs": {
           "body": "@variables('FullUserDoc')",
           "headers": {
-            "x-functions-key": "mre5BrhmhFIBqD0HEpIlb74OYX7TSD2ZvYIl78jhVTmuAzFuIKv0TQ=="
+            "REDACTEDKEE": "REDACTEDKEE"
           },
           "method": "POST",
           "uri": "https://apmleakscanner.azurewebsites.net/api/APMLeakScannerJS"
