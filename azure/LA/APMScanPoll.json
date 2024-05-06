@@ -1,0 +1,325 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "For_each": {
+        "actions": {
+          "Append_to_array_variable": {
+            "inputs": {
+              "name": "FullUserDoc",
+              "value": {
+                "creds": "@body('Parse_JSON')?['creds']",
+                "leaks": "@body('Parse_JSON')?['previousLeaks']",
+                "user": "@body('Parse_JSON')?['email']"
+              }
+            },
+            "runAfter": {
+              "Parse_JSON": ["Succeeded"]
+            },
+            "type": "AppendToArrayVariable"
+          },
+          "Parse_JSON": {
+            "inputs": {
+              "content": "@items('For_each')",
+              "schema": {
+                "properties": {
+                  "creds": {
+                    "properties": {},
+                    "type": "object"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "previousLeaks": {
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "ParseJson"
+          }
+        },
+        "foreach": "@body('Query_documents_V5')?['value']",
+        "runAfter": {
+          "Initialize_variable": ["Succeeded"]
+        },
+        "type": "Foreach"
+      },
+      "For_each_1": {
+        "actions": {
+          "Condition": {
+            "actions": {},
+            "else": {
+              "actions": {
+                "Compose": {
+                  "inputs": "@string(items('For_each_1')['new_leaks'])",
+                  "type": "Compose"
+                },
+                "Create_or_update_document_(V3)": {
+                  "inputs": {
+                    "body": {
+                      "_attachments": "@body('Parse_JSON_1')?['_attachments']",
+                      "_etag": "@body('Parse_JSON_1')?['_etag']",
+                      "_rid": "@body('Parse_JSON_1')?['_rid']",
+                      "_self": "@body('Parse_JSON_1')?['_self']",
+                      "_ts": "@body('Parse_JSON_1')?['_ts']",
+                      "creds": "@body('Parse_JSON_1')?['creds']",
+                      "email": "@body('Parse_JSON_1')?['email']",
+                      "id": "@body('Parse_JSON_1')?['id']",
+                      "name": "@body('Parse_JSON_1')?['name']",
+                      "optIn": "@body('Parse_JSON_1')?['optIn']",
+                      "previousLeaks": "@items('For_each_1')['total_leaks']"
+                    },
+                    "headers": {
+                      "x-ms-documentdb-is-upsert": true
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/v2/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('autoPassUsersDB')}/colls/@{encodeURIComponent('autoPassUsersContainer')}/docs"
+                  },
+                  "runAfter": {
+                    "Parse*JSON_1": ["Succeeded"]
+                  },
+                  "type": "ApiConnection"
+                },
+                "Parse_JSON_1": {
+                  "inputs": {
+                    "content": "@body('Query_documents_V5_1').value[0]",
+                    "schema": {
+                      "properties": {
+                        "_attachments": {
+                          "type": "string"
+                        },
+                        "_etag": {
+                          "type": "string"
+                        },
+                        "_rid": {
+                          "type": "string"
+                        },
+                        "_self": {
+                          "type": "string"
+                        },
+                        "_ts": {
+                          "type": "integer"
+                        },
+                        "creds": {
+                          "properties": {},
+                          "type": "object"
+                        },
+                        "email": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "optIn": {
+                          "type": "boolean"
+                        },
+                        "previousLeaks": {
+                          "type": "array"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "runAfter": {
+                    "Query_documents_V5_1": ["Succeeded"]
+                  },
+                  "type": "ParseJson"
+                },
+                "Query_documents_V5_1": {
+                  "inputs": {
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['documentdb']['connectionId']"
+                      }
+                    },
+                    "method": "get",
+                    "path": "/v5/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('autoPassUsersDB')}/colls/@{encodeURIComponent('autoPassUsersContainer')}/query",
+                    "queries": {
+                      "maxItemCount": 1,
+                      "queryText": "SELECT * FROM c WHERE c.email = '@{items('For_each_1')['main_email']}'"
+                    }
+                  },
+                  "runAfter": {
+                    "Send_an_email*(V2)": ["Succeeded"]
+                  },
+                  "type": "ApiConnection"
+                },
+                "Send*an_email*(V2)": {
+                  "inputs": {
+                    "body": {
+                      "Body": "<p>Dear @{items('For_each_1')['main_email']},<br><br>We regret to inform you that we have detected a potential security breach associated with your account on AutoPassManager. Our system has identified your email address in a recent dark web data dump.</p><br><p>In particular your emails were a part of the following data leaks:</p><br><p>@{outputs('Compose')}<br><br>Your security is our utmost priority, and as a precautionary measure, we strongly advise you to utilize our password leak functionality on our platform. This feature will allow you to check if any of your passwords have been affected by this breach.</p><br><p><br>In the event that the password leak functionality shows that your password has been part of a leak, please take immediate action to secure your account. We recommend changing your password to safeguard your social media accounts.<br><br>Thank you for your attention to this matter.<br><br>Best regards,<br><br>AutoPassManager</p>",
+                      "Importance": "High",
+                      "Subject": "Security Alert: Your Account Information May Have Been Compromised",
+                      "To": "@{items('For_each_1')['main_email']}"
+                    },
+                    "host": {
+                      "connection": {
+                        "name": "@parameters('$connections')['office365']['connectionId']"
+                      }
+                    },
+                    "method": "post",
+                    "path": "/v2/Mail"
+                  },
+                  "runAfter": {
+                    "Compose": ["Succeeded"]
+                  },
+                  "type": "ApiConnection"
+                }
+              }
+            },
+            "expression": {
+              "and": [
+                {
+                  "equals": ["@items('For_each_1')['new_leaks']", ""]
+                }
+              ]
+            },
+            "type": "If"
+          }
+        },
+        "foreach": "@body('Parse_JSON_2')",
+        "runAfter": {
+          "Parse_JSON_2": ["Succeeded"]
+        },
+        "type": "Foreach"
+      },
+      "HTTP": {
+        "inputs": {
+          "body": "@variables('FullUserDoc')",
+          "headers": {
+            "x-functions-key": "mre5BrhmhFIBqD0HEpIlb74OYX7TSD2ZvYIl78jhVTmuAzFuIKv0TQ=="
+          },
+          "method": "POST",
+          "uri": "https://apmleakscanner.azurewebsites.net/api/APMLeakScannerJS"
+        },
+        "runAfter": {
+          "For_each": ["Succeeded"]
+        },
+        "runtimeConfiguration": {
+          "contentTransfer": {
+            "transferMode": "Chunked"
+          }
+        },
+        "type": "Http"
+      },
+      "Initialize_variable": {
+        "inputs": {
+          "variables": [
+            {
+              "name": "FullUserDoc",
+              "type": "array"
+            }
+          ]
+        },
+        "runAfter": {
+          "Query_documents_V5": ["Succeeded"]
+        },
+        "type": "InitializeVariable"
+      },
+      "Parse_JSON_2": {
+        "inputs": {
+          "content": "@body('HTTP')",
+          "schema": {
+            "items": {
+              "properties": {
+                "main_email": {
+                  "type": "string"
+                },
+                "new_leaks": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "total_leaks": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "required": ["main_email", "new_leaks", "total_leaks"],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "runAfter": {
+          "HTTP": ["Succeeded"]
+        },
+        "type": "ParseJson"
+      },
+      "Query_documents_V5": {
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['documentdb']['connectionId']"
+            }
+          },
+          "method": "get",
+          "path": "/v5/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('autoPassUsersDB')}/colls/@{encodeURIComponent('autoPassUsersContainer')}/query",
+          "queries": {
+            "queryText": "SELECT * FROM c\nWHERE c.optIn= true"
+          }
+        },
+        "runAfter": {},
+        "type": "ApiConnection"
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "Recurrence": {
+        "evaluatedRecurrence": {
+          "frequency": "Day",
+          "interval": 1,
+          "schedule": {
+            "hours": ["7"]
+          },
+          "timeZone": "W. Europe Standard Time"
+        },
+        "recurrence": {
+          "frequency": "Day",
+          "interval": 1,
+          "schedule": {
+            "hours": ["7"]
+          },
+          "timeZone": "W. Europe Standard Time"
+        },
+        "type": "Recurrence"
+      }
+    }
+  },
+  "parameters": {
+    "$connections": {
+      "value": {
+        "documentdb": {
+          "connectionId": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/resourceGroups/AutoPassManager/providers/Microsoft.Web/connections/documentdb",
+          "connectionName": "documentdb",
+          "id": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/providers/Microsoft.Web/locations/northeurope/managedApis/documentdb"
+        },
+        "office365": {
+          "connectionId": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/resourceGroups/AutoPassManager/providers/Microsoft.Web/connections/office365-1",
+          "connectionName": "office365-1",
+          "id": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/providers/Microsoft.Web/locations/northeurope/managedApis/office365"
+        }
+      }
+    }
+  }
+}

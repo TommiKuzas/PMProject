@@ -105,6 +105,7 @@ export class DashboardComponent implements OnInit {
     this.callGetCredsFunction({ 'user-email': userEmail }); // gets creds
   }
 
+  // initialise vars
   loginResponse: any;
   showProfileModal: boolean = false;
   showCheckPassStrengthModal: boolean = false;
@@ -154,11 +155,12 @@ export class DashboardComponent implements OnInit {
           ?.setAttribute('style', 'display: block;');
       }, 0);
     });
-    this.fillForms(); // takes values from db and ads them to form.
+    this.fillForms(); // takes values from db and adds them to form.
     this.initialiseReadOnly();
     document.getElementById('spinner')?.setAttribute('style', 'display: none;');
   }
 
+  // turns inputs fields into forms
   initaliseForms() {
     this.sections.forEach((section) => {
       const formGroup = this.formBuilder.group({
@@ -168,6 +170,8 @@ export class DashboardComponent implements OnInit {
       this.sectionForms[section.key] = formGroup;
     });
   }
+
+  // fills forms with info from db
   fillForms() {
     this.sections.forEach((section) => {
       this.sectionForms[section.key].patchValue({
@@ -188,6 +192,7 @@ export class DashboardComponent implements OnInit {
     return false;
   }
 
+  // make forms read only
   initialiseReadOnly() {
     this.sections.forEach((section) => {
       if (section.email != '') {
@@ -195,6 +200,7 @@ export class DashboardComponent implements OnInit {
       }
     });
   }
+
   // returns true if password is atleast 8 characters long with number and special character
   checkPassStrength(password: string): boolean {
     const strongPassRegex: RegExp =
@@ -203,15 +209,17 @@ export class DashboardComponent implements OnInit {
   }
 
   // <<<==================================================================>>
-  //                               Buttons
+  //                             \/Buttons\/
   // <<<==================================================================>>
 
   toggleProfileModal() {
     this.showProfileModal = !this.showProfileModal;
   }
+
   toggleCheckPassStrengthModal() {
     this.showCheckPassStrengthModal = !this.showProfileModal;
   }
+
   // when button click change to hide or view/add
   toggleCollapse(section: SectionData) {
     section.isExpanded = !section.isExpanded;
@@ -242,11 +250,10 @@ export class DashboardComponent implements OnInit {
         ?.setAttribute('style', 'display: none;');
       // creates payload
       const payload = {
-        'new-Cred': {
-          [section.key]: {
-            email: email,
-            password: pass,
-          },
+        key: section.key,
+        creds: {
+          email: email,
+          password: pass,
         },
         'user-email': userEmail,
       };
@@ -282,11 +289,12 @@ export class DashboardComponent implements OnInit {
         window.location.reload();
       },
       (error) => {
-        console.error('Error while Adding Creds:', error);
+        console.error('Error while Deleting Creds:', error);
       }
     );
   }
 
+  // copy email or pass to clipboard
   copyDetails(section: SectionData, emailPass: string) {
     if (emailPass == 'Email') {
       this.clipboard.copy(section.email);
@@ -295,10 +303,12 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  // censor/uncensor creds
   toggleDetails(section: SectionData) {
     section.showCreds = !section.showCreds;
   }
 
+  // makes forms editable
   onEditButtonClick(section: SectionData) {
     section.readOnlyMode = false;
     section.showEditBtn = false;
@@ -306,6 +316,7 @@ export class DashboardComponent implements OnInit {
     section.showCreds = true;
   }
 
+  // sends update request to db
   onUpdateButtonClick(section: SectionData) {
     document
       .getElementById(section.key + 'update-spinner')
@@ -333,7 +344,7 @@ export class DashboardComponent implements OnInit {
           window.location.reload();
         },
         (error) => {
-          console.error('Error while Adding Creds:', error);
+          console.error('Error while Updating Creds:', error);
         }
       );
     } else {
@@ -347,10 +358,12 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  // opens new tab with social media login
   onSocialLinkButtonClick(section: SectionData) {
     window.open(section.loginURL);
   }
 
+  // create strong password
   generatePass() {
     const possibleCharacters =
       'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPWRSTUVWXYZ0123456789!@£$%^&*#?';

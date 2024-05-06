@@ -1,0 +1,207 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "Compose_1": {
+        "inputs": "@removeProperty(body('Parse_JSON')?['creds'], triggerBody()?['key'])\r\n",
+        "runAfter": {
+          "Parse_JSON": ["Succeeded"]
+        },
+        "type": "Compose"
+      },
+      "Create_or_update_document_(V3)": {
+        "inputs": {
+          "body": "@variables('new creds')",
+          "headers": {
+            "x-ms-documentdb-is-upsert": true
+          },
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['documentdb']['connectionId']"
+            }
+          },
+          "method": "post",
+          "path": "/v2/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('autoPassUsersDB')}/colls/@{encodeURIComponent('autoPassUsersContainer')}/docs"
+        },
+        "runAfter": {
+          "Initialize_variable": ["Succeeded"]
+        },
+        "type": "ApiConnection"
+      },
+      "Initialize_variable": {
+        "inputs": {
+          "variables": [
+            {
+              "name": "new creds",
+              "type": "object",
+              "value": {
+                "_attachments": "@body('Parse_JSON')?['_attachments']",
+                "_rid": "@body('Parse_JSON')?['_rid']",
+                "_self": "@body('Parse_JSON')?['_self']",
+                "_ts": "@body('Parse_JSON')?['_ts']",
+                "creds": "@outputs('Compose_1')",
+                "email": "@body('Parse_JSON')?['email']",
+                "id": "@body('Parse_JSON')?['id']",
+                "name": "@body('Parse_JSON')?['name']",
+                "optIn": "@body('Parse_JSON')?['optIn']",
+                "previousLeaks": "@body('Parse_JSON')?['previousLeaks']"
+              }
+            }
+          ]
+        },
+        "runAfter": {
+          "Compose_1": ["Succeeded"]
+        },
+        "type": "InitializeVariable"
+      },
+      "Parse_JSON": {
+        "inputs": {
+          "content": "@body('Query_documents_V5').value[0]",
+          "schema": {
+            "properties": {
+              "_attachments": {
+                "type": "string"
+              },
+              "_etag": {
+                "type": "string"
+              },
+              "_rid": {
+                "type": "string"
+              },
+              "_self": {
+                "type": "string"
+              },
+              "_ts": {
+                "type": "integer"
+              },
+              "creds": {
+                "properties": {
+                  "facebook": {
+                    "properties": {
+                      "email": {
+                        "type": "string"
+                      },
+                      "password": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "linkedin": {
+                    "properties": {
+                      "email": {
+                        "type": "string"
+                      },
+                      "password": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "x": {
+                    "properties": {
+                      "email": {
+                        "type": "string"
+                      },
+                      "password": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "email": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "optIn": {
+                "type": "boolean"
+              },
+              "previousLeaks": {
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "runAfter": {
+          "Query_documents_V5": ["Succeeded"]
+        },
+        "type": "ParseJson"
+      },
+      "Query_documents_V5": {
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['documentdb']['connectionId']"
+            }
+          },
+          "method": "get",
+          "path": "/v5/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('autoPassUsersDB')}/colls/@{encodeURIComponent('autoPassUsersContainer')}/query",
+          "queries": {
+            "maxItemCount": 1,
+            "queryText": "SELECT * FROM c\nWHERE c.email = \"@{triggerBody()?['user-email']}\""
+          }
+        },
+        "runAfter": {},
+        "type": "ApiConnection"
+      },
+      "Response": {
+        "inputs": {
+          "statusCode": 204
+        },
+        "kind": "Http",
+        "runAfter": {
+          "Create_or_update_document_(V3)": ["Succeeded"]
+        },
+        "type": "Response"
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "When_a_HTTP_request_is_received": {
+        "inputs": {
+          "method": "POST",
+          "schema": {
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "user-email": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "kind": "Http",
+        "type": "Request"
+      }
+    }
+  },
+  "parameters": {
+    "$connections": {
+      "value": {
+        "documentdb": {
+          "connectionId": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/resourceGroups/AutoPassManager/providers/Microsoft.Web/connections/documentdb",
+          "connectionName": "documentdb",
+          "id": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/providers/Microsoft.Web/locations/northeurope/managedApis/documentdb"
+        }
+      }
+    }
+  }
+}

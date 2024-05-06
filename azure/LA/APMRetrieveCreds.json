@@ -1,0 +1,140 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "For_each": {
+        "actions": {
+          "Set_variable": {
+            "inputs": {
+              "name": "creds",
+              "value": "@items('For_each')?['creds']"
+            },
+            "type": "SetVariable"
+          }
+        },
+        "foreach": "@outputs('Parse_JSON')?['body']?['value']",
+        "runAfter": {
+          "Initialize_variable": ["Succeeded"]
+        },
+        "type": "Foreach"
+      },
+      "Initialize_variable": {
+        "inputs": {
+          "variables": [
+            {
+              "name": "creds",
+              "type": "object"
+            }
+          ]
+        },
+        "runAfter": {
+          "Parse_JSON": ["Succeeded"]
+        },
+        "type": "InitializeVariable"
+      },
+      "Parse_JSON": {
+        "inputs": {
+          "content": "@body('Query_documents_V5')",
+          "schema": {
+            "properties": {
+              "value": {
+                "items": {
+                  "properties": {
+                    "creds": {
+                      "properties": {
+                        "FB": {
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["email", "id", "name", "creds"],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "runAfter": {
+          "Query_documents_V5": ["Succeeded"]
+        },
+        "type": "ParseJson"
+      },
+      "Query_documents_V5": {
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['documentdb']['connectionId']"
+            }
+          },
+          "method": "get",
+          "path": "/v5/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('autoPassUsersDB')}/colls/@{encodeURIComponent('autoPassUsersContainer')}/query",
+          "queries": {
+            "queryText": "SELECT * FROM c WHERE c.email = '@{triggerBody()?['user-email']}'"
+          }
+        },
+        "runAfter": {},
+        "type": "ApiConnection"
+      },
+      "Response": {
+        "inputs": {
+          "body": "@variables('creds')",
+          "statusCode": 200
+        },
+        "kind": "Http",
+        "runAfter": {
+          "For_each": ["Succeeded"]
+        },
+        "type": "Response"
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "When_a_HTTP_request_is_received": {
+        "inputs": {
+          "method": "POST",
+          "schema": {
+            "properties": {
+              "user-email": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "kind": "Http",
+        "type": "Request"
+      }
+    }
+  },
+  "parameters": {
+    "$connections": {
+      "value": {
+        "documentdb": {
+          "connectionId": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/resourceGroups/AutoPassManager/providers/Microsoft.Web/connections/documentdb",
+          "connectionName": "documentdb",
+          "id": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/providers/Microsoft.Web/locations/northeurope/managedApis/documentdb"
+        }
+      }
+    }
+  }
+}

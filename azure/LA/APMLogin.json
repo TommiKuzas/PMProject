@@ -1,0 +1,224 @@
+{
+  "definition": {
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "actions": {
+      "Condition": {
+        "actions": {
+          "Create_or_update_document_(V3)": {
+            "inputs": {
+              "body": "@variables('userDoc')",
+              "host": {
+                "connection": {
+                  "name": "@parameters('$connections')['documentdb']['connectionId']"
+                }
+              },
+              "method": "post",
+              "path": "/v2/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('autoPassUsersDB')}/colls/@{encodeURIComponent('autoPassUsersContainer')}/docs"
+            },
+            "type": "ApiConnection"
+          },
+          "Response": {
+            "inputs": {
+              "body": "@body('Parse_JSON').value[0]['optIn']",
+              "statusCode": 201
+            },
+            "kind": "Http",
+            "runAfter": {
+              "Create_or_update_document_(V3)": ["Succeeded"]
+            },
+            "type": "Response"
+          }
+        },
+        "else": {
+          "actions": {
+            "Response_2": {
+              "inputs": {
+                "body": "@body('Parse_JSON').value[0]['optIn']",
+                "statusCode": 200
+              },
+              "kind": "Http",
+              "type": "Response"
+            }
+          }
+        },
+        "expression": {
+          "and": [
+            {
+              "equals": ["@variables('valueString')", "[]"]
+            }
+          ]
+        },
+        "runAfter": {
+          "Initialize_variable_3": ["Succeeded"]
+        },
+        "type": "If"
+      },
+      "Initialize_variable": {
+        "inputs": {
+          "variables": [
+            {
+              "name": "userDoc",
+              "type": "object",
+              "value": {
+                "creds": {},
+                "email": "@triggerBody()?['user-email']",
+                "id": "@triggerBody()?['id']",
+                "name": "@triggerBody()?['name']",
+                "optIn": false,
+                "previousLeaks": []
+              }
+            }
+          ]
+        },
+        "runAfter": {},
+        "type": "InitializeVariable"
+      },
+      "Initialize_variable_3": {
+        "inputs": {
+          "variables": [
+            {
+              "name": "valueString",
+              "type": "string",
+              "value": "@{body('Parse_JSON')?['value']}"
+            }
+          ]
+        },
+        "runAfter": {
+          "Parse_JSON": ["Succeeded"]
+        },
+        "type": "InitializeVariable"
+      },
+      "Parse_JSON": {
+        "inputs": {
+          "content": "@body('Query_documents_V5')",
+          "schema": {
+            "properties": {
+              "ActivityId": {
+                "type": "string"
+              },
+              "ContinuationToken": {},
+              "Count": {
+                "type": "integer"
+              },
+              "RequestCharge": {
+                "type": "number"
+              },
+              "SessionToken": {
+                "type": "string"
+              },
+              "nextLink": {},
+              "value": {
+                "items": {
+                  "properties": {
+                    "_attachments": {
+                      "type": "string"
+                    },
+                    "_etag": {
+                      "type": "string"
+                    },
+                    "_rid": {
+                      "type": "string"
+                    },
+                    "_self": {
+                      "type": "string"
+                    },
+                    "_ts": {
+                      "type": "integer"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "email",
+                    "id",
+                    "name",
+                    "_rid",
+                    "_self",
+                    "_etag",
+                    "_attachments",
+                    "_ts"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "runAfter": {
+          "Query_documents_V5": ["Succeeded"]
+        },
+        "type": "ParseJson"
+      },
+      "Query_documents_V5": {
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['documentdb']['connectionId']"
+            }
+          },
+          "method": "get",
+          "path": "/v5/cosmosdb/@{encodeURIComponent('AccountNameFromSettings')}/dbs/@{encodeURIComponent('autoPassUsersDB')}/colls/@{encodeURIComponent('autoPassUsersContainer')}/query",
+          "queries": {
+            "maxItemCount": 1,
+            "queryText": "SELECT * FROM c\nWHERE c.email = \"@{triggerBody()?['user-email']}\""
+          }
+        },
+        "runAfter": {
+          "Initialize_variable": ["Succeeded"]
+        },
+        "type": "ApiConnection"
+      }
+    },
+    "contentVersion": "1.0.0.0",
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "defaultValue": {},
+        "type": "Object"
+      }
+    },
+    "triggers": {
+      "manual": {
+        "inputs": {
+          "method": "POST",
+          "schema": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "user-email": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "kind": "Http",
+        "type": "Request"
+      }
+    }
+  },
+  "parameters": {
+    "$connections": {
+      "value": {
+        "documentdb": {
+          "connectionId": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/resourceGroups/AutoPassManager/providers/Microsoft.Web/connections/documentdb",
+          "connectionName": "documentdb",
+          "id": "/subscriptions/efdae4f7-8f34-4667-8d70-8ea899591f61/providers/Microsoft.Web/locations/northeurope/managedApis/documentdb"
+        }
+      }
+    }
+  }
+}

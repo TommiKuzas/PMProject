@@ -41,7 +41,7 @@
 }
 
 .logout-button {
-  padding: 10px 20px;
+  padding: 10px 10px;
   margin-top: 20px;
   font-size: 16px;
   background-color: #333434;
@@ -58,4 +58,18 @@
 .profile-details {
   margin: auto;
   text-align: center;
+}
+
+.opt-in-check-boxes {
+  margin: 20px;
+}
+
+.form-check-input {
+  margin-left: 10px;
+  background-color: #aaa;
+  border-color: #000000;
+}
+
+.form-check-label {
+  font-size: large;
 }

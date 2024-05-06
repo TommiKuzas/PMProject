@@ -21,10 +21,14 @@ export class LoginPageComponent implements OnInit {
     let uuid = uuidv4();
     this.authService.user$
       .pipe(
-        filter((user) => !!user),
+        filter((user) => !!user), // get cookie
         tap((user) => {
-          const userName = user?.name ?? '';
+          // get user from cookie
+          var userName = user?.name ?? '';
           const userEmail = user?.email ?? '';
+          if (userName.includes('@')) {
+            userName = userName.split('@')[0];
+          }
 
           sessionStorage.setItem('userFName', userName);
           sessionStorage.setItem('userEmail', userEmail);
@@ -40,15 +44,17 @@ export class LoginPageComponent implements OnInit {
         this.router.navigate(['/dashboard']);
       });
   }
-  loginResponse: any;
 
   login() {
     this.authService.loginWithRedirect();
   }
+
+  //
   callLoginFunction(email: any) {
     this.webService.login(email).subscribe(
       (response) => {
-        this.loginResponse = response;
+        var optInString = response ? 'true' : 'false';
+        sessionStorage.setItem('opt-in', optInString);
       },
       (error) => {
         console.error('Error while logging in:', error);

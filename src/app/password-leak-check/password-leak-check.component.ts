@@ -33,7 +33,6 @@ export class PasswordLeakCheckComponent implements OnInit {
         if (this.leakCount == null) {
           this.leakCount = '0';
         }
-        console.log(this.leakCount);
         document
           .getElementById('spinner')
           ?.setAttribute('style', 'display: none;');
@@ -46,6 +45,7 @@ export class PasswordLeakCheckComponent implements OnInit {
       }
     );
   }
+
   preparePass(password: string) {
     const hashedPassString = CryptoJS.SHA1(password).toString();
     const firstFiveDigits = hashedPassString.substring(0, 5);
